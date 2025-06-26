@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 
 
-
 // Replace with your actual Supabase URL and anon key
 
 

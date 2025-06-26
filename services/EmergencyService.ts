@@ -164,6 +164,49 @@ class EmergencyService {
     }
   }
 
+  public async resolveAllActiveSOSAlerts(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('sos_alerts')
+        .update({
+          status: 'resolved',
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (error) throw error;
+
+      console.log('All active SOS alerts resolved for user:', userId);
+    } catch (error) {
+      console.error('Error resolving all active SOS alerts:', error);
+      throw error;
+    }
+  }
+
+  public async resolveStaleSOSAlerts(userId: string, hoursOld: number = 24) {
+    try {
+      const cutoffTime = new Date(Date.now() - hoursOld * 60 * 60 * 1000);
+      
+      const { error } = await supabase
+        .from('sos_alerts')
+        .update({
+          status: 'resolved',
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .lt('triggered_at', cutoffTime.toISOString());
+
+      if (error) throw error;
+
+      console.log(`Stale SOS alerts (older than ${hoursOld} hours) resolved for user:`, userId);
+    } catch (error) {
+      console.error('Error resolving stale SOS alerts:', error);
+      throw error;
+    }
+  }
+
   public async scheduleCheckIn(userId: string, scheduledTime: Date) {
     try {
       const location = await this.getCurrentLocation();
@@ -397,6 +440,19 @@ class EmergencyService {
 
   public getCurrentLocationData(): LocationData | null {
     return this.currentLocation;
+  }
+
+  public async deleteCheckIn(checkInId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('safety_checks')
+        .delete()
+        .eq('id', checkInId);
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting check-in:', error);
+      throw error;
+    }
   }
 }
 

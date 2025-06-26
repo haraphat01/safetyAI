@@ -50,6 +50,14 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="safety-tips"
+          options={{
+            title: 'Safety Tips',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="shield.lefthalf.filled" color={color} />,
+            href: null,
+          }}
+        />
+        <Tabs.Screen
           name="explore"
           options={{
             title: 'Safety',
