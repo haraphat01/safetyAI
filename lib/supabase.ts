@@ -1,9 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 
+// Supabase configuration
 
-// Replace with your actual Supabase URL and anon key
 
+// Validate configuration
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase configuration. Please check your environment variables.');
+}
 
 // Custom storage adapter for React Native
 const ExpoSecureStoreAdapter = {
@@ -18,6 +22,7 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
+// Create Supabase client with error handling
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: ExpoSecureStoreAdapter,

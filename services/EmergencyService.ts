@@ -188,6 +188,22 @@ class EmergencyService {
     try {
       const cutoffTime = new Date(Date.now() - hoursOld * 60 * 60 * 1000);
       
+      // First, get the count of stale alerts
+      const { data: staleAlerts, error: countError } = await supabase
+        .from('sos_alerts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .lt('triggered_at', cutoffTime.toISOString());
+
+      if (countError) throw countError;
+
+      // If no stale alerts, return early
+      if (!staleAlerts || staleAlerts.length === 0) {
+        return;
+      }
+
+      // Resolve the stale alerts
       const { error } = await supabase
         .from('sos_alerts')
         .update({
@@ -200,7 +216,7 @@ class EmergencyService {
 
       if (error) throw error;
 
-      console.log(`Stale SOS alerts (older than ${hoursOld} hours) resolved for user:`, userId);
+      console.log(`${staleAlerts.length} stale SOS alerts (older than ${hoursOld} hours) resolved for user:`, userId);
     } catch (error) {
       console.error('Error resolving stale SOS alerts:', error);
       throw error;
