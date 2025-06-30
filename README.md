@@ -333,5 +333,6 @@ For support and questions:
 ---
 
 **SafeGuard AI** - Your personal safety companion. Stay safe, stay protected. 🛡️
-#   s a f e t y A I  
+#   s a f e t y A I 
+ 
  

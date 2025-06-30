@@ -56,10 +56,10 @@
   - 1/day check-ins; non-response alerts (Supabase Realtime).
   - Offline queuing (Expo AsyncStorage).
   - Profile: Add 3 contacts, medical info (Supabase Postgres).
-  - Crime data API (Crimeometer) via Supabase Edge Functions.
+
 - **Deliverables**: SOS/check-in system, profile UI, beta build.
 - **Success Criteria**: <1s SOS delivery, 90% risk warning coverage.
-- **Dependencies**: Crimeometer API, Expo permissions.
+- **Dependencies**: Expo permissions.
 - **Effort**: 3 weeks.
 
 ### Chunk 4: Premium Features & Subscription (Weeks 9-11)
@@ -95,7 +95,7 @@
   - **Backend**: Supabase (Auth, Postgres, Storage, Realtime, Edge Functions).
   - **AI**: TensorFlow Lite (free), OpenAI CLIP (premium).
   - **Payments**: Stripe via BuildShip.
-  - **APIs**: Crimeometer.
+  
 - **Architecture**: Expo app processes sensors locally, syncs with Supabase for alerts/storage. Realtime SOS via Supabase; Edge Functions for APIs. Offline support via Expo AsyncStorage.
 - **Non-Functional**:
   - **Performance**: <2s alerts, <1s SOS, battery-efficient.

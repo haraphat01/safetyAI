@@ -42,13 +42,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
           }}
         />
-        <Tabs.Screen
-          name="crime-data"
-          options={{
-            title: 'Crime Data',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
-          }}
-        />
+
         <Tabs.Screen
           name="safety-tips"
           options={{

@@ -5,7 +5,6 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useSOSRecording } from '@/hooks/useSOSRecording';
 import { supabase } from '@/lib/supabase';
 import { aiSafetyMonitor, ThreatDetection } from '@/services/AISafetyMonitor';
-import CrimeometerService from '@/services/CrimeometerService';
 import { emergencyService } from '@/services/EmergencyService';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -24,7 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AIMonitoringStatus from '@/components/AIMonitoringStatus';
 import CheckInCard from '@/components/CheckInCard';
 import CheckInModal from '@/components/CheckInModal';
-import CrimeAlerts from '@/components/CrimeAlerts';
+
 import HomeHeader from '@/components/HomeHeader';
 import QuickActions from '@/components/QuickActions';
 import RecentAlerts from '@/components/RecentAlerts';
@@ -43,7 +42,7 @@ export default function HomeScreen() {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [isSOSActive, setIsSOSActive] = useState(false);
   const [recentThreats, setRecentThreats] = useState<ThreatDetection[]>([]);
-  const [crimeAlerts, setCrimeAlerts] = useState<any[]>([]);
+
   const [checkInModalVisible, setCheckInModalVisible] = useState(false);
   const [scheduledTime, setScheduledTime] = useState<Date>(new Date(Date.now() + 30 * 60 * 1000));
   const [isScheduling, setIsScheduling] = useState(false);
@@ -75,8 +74,7 @@ export default function HomeScreen() {
     // Check for active SOS alerts (only resolve stale alerts once per session)
     checkActiveSOS();
 
-    // Load crime alerts
-    loadCrimeAlerts();
+
 
     // Set up threat callback
     aiSafetyMonitor.setThreatCallback((threat) => {
@@ -151,17 +149,7 @@ export default function HomeScreen() {
     }
   };
 
-  const loadCrimeAlerts = async () => {
-    try {
-      const location = await emergencyService.getCurrentLocation();
-      if (location) {
-        const alerts = await CrimeometerService.getCrimeAlerts(location.latitude, location.longitude);
-        setCrimeAlerts(alerts);
-      }
-    } catch (error) {
-      console.error('Failed to load crime alerts:', error);
-    }
-  };
+
 
   const checkActiveSOS = async () => {
     if (!user) return;
@@ -417,8 +405,7 @@ export default function HomeScreen() {
         {/* Recent Alerts */}
         <RecentAlerts recentThreats={recentThreats} />
 
-        {/* Crime Alerts */}
-        <CrimeAlerts crimeAlerts={crimeAlerts} />
+
       </ScrollView>
 
       {/* Check-In Modal */}
