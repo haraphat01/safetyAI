@@ -89,4 +89,32 @@ export interface IncidentLog {
   };
   media_urls?: string[];
   created_at: string;
+}
+
+// SOSData interface for the sos_data table
+export interface SOSData {
+  id: string;
+  user_id: string;
+  sos_alert_id?: string | null;
+  audio_url?: string | null;
+  audio_filename?: string | null;
+  location: {
+    latitude: number;
+    longitude: number;
+    formattedAddress?: string;
+    address?: string;
+    [key: string]: any;
+  };
+  battery_level?: number | null;
+  network_info?: {
+    isWifi?: boolean;
+    isConnected?: boolean;
+    type?: string;
+    [key: string]: any;
+  } | null;
+  device_info?: any;
+  recording_duration?: number | null;
+  sent_at: string;
+  created_at: string;
+  updated_at: string;
 } 

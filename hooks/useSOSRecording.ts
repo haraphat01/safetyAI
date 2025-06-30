@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { emergencyService } from '@/services/EmergencyService';
 import { locationService } from '@/services/LocationService';
+import { sosDataService } from '@/services/SOSDataService';
 import { Audio } from 'expo-av';
 import * as Battery from 'expo-battery';
 import * as FileSystem from 'expo-file-system';
@@ -85,6 +86,9 @@ export function useSOSRecording() {
         throw new Error('Unable to get location information');
       }
 
+      // --- Fix: Always define fileName ---
+      let fileName: string | null = null;
+
       // Upload audio to Supabase Storage and get the public URL
       let audioUrl = null;
       if (audioUri) {
@@ -98,7 +102,7 @@ export function useSOSRecording() {
 
           // Create a unique filename with timestamp
           const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-          const fileName = `sos-audio-${user.id}-${timestamp}.m4a`;
+          fileName = `sos-audio-${user.id}-${timestamp}.m4a`;
 
           console.log('Attempting to upload audio file:', fileName);
 
@@ -241,6 +245,26 @@ export function useSOSRecording() {
       if (!response.ok) {
         console.error('Edge function failed:', responseData);
         throw new Error(`API call failed: ${response.status} - ${responseData.message || 'Unknown error'}`);
+      }
+
+      // --- INSERT SOS DATA INTO THE DATABASE ---
+      try {
+        await sosDataService.createSOSData({
+          user_id: user.id,
+          sos_alert_id: null, // If you have an alert id, use it
+          audio_url: audioUrl,
+          audio_filename: audioUrl ? fileName : null,
+          location: sosPayload.location,
+          battery_level: battery,
+          network_info: sosPayload.networkInfo,
+          device_info: sosPayload.deviceInfo,
+          recording_duration: recordingTimer,
+          sent_at: new Date().toISOString(),
+        });
+        console.log('SOS data saved to sos_data table.');
+      } catch (dbErr) {
+        console.error('Failed to save SOS data to sos_data table:', dbErr);
+        Alert.alert('Warning', 'SOS sent, but failed to save data for history.');
       }
 
       // Success feedback with enhanced information
