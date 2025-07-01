@@ -6,6 +6,7 @@ import { useSOSRecording } from '@/hooks/useSOSRecording';
 import { supabase } from '@/lib/supabase';
 import { aiSafetyMonitor, ThreatDetection } from '@/services/AISafetyMonitor';
 import { emergencyService } from '@/services/EmergencyService';
+import { fakeCallService, ScheduledFakeCall } from '@/services/FakeCallService';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -23,6 +24,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AIMonitoringStatus from '@/components/AIMonitoringStatus';
 import CheckInCard from '@/components/CheckInCard';
 import CheckInModal from '@/components/CheckInModal';
+import FakeCallModal from '@/components/FakeCallModal';
+import IncomingCallScreen from '@/components/IncomingCallScreen';
 
 import HomeHeader from '@/components/HomeHeader';
 import QuickActions from '@/components/QuickActions';
@@ -44,6 +47,9 @@ export default function HomeScreen() {
   const [recentThreats, setRecentThreats] = useState<ThreatDetection[]>([]);
 
   const [checkInModalVisible, setCheckInModalVisible] = useState(false);
+  const [fakeCallModalVisible, setFakeCallModalVisible] = useState(false);
+  const [incomingCallVisible, setIncomingCallVisible] = useState(false);
+  const [currentCall, setCurrentCall] = useState<ScheduledFakeCall | null>(null);
   const [scheduledTime, setScheduledTime] = useState<Date>(new Date(Date.now() + 30 * 60 * 1000));
   const [isScheduling, setIsScheduling] = useState(false);
 
@@ -73,6 +79,12 @@ export default function HomeScreen() {
     initializeAIMonitoring();
     // Check for active SOS alerts (only resolve stale alerts once per session)
     checkActiveSOS();
+
+    // Set up fake call callback
+    fakeCallService.setCallTriggeredCallback((call) => {
+      setCurrentCall(call);
+      setIncomingCallVisible(true);
+    });
 
 
 
@@ -357,6 +369,29 @@ export default function HomeScreen() {
     router.push('/(tabs)/safety-tips');
   };
 
+  const handleFakeCall = () => {
+    setFakeCallModalVisible(true);
+  };
+
+  const handleAnswerCall = async () => {
+    if (currentCall) {
+      await fakeCallService.answerCall();
+    }
+  };
+
+  const handleDeclineCall = async () => {
+    if (currentCall) {
+      await fakeCallService.endCall();
+      setIncomingCallVisible(false);
+      setCurrentCall(null);
+    }
+  };
+
+  const handleCloseCall = () => {
+    setIncomingCallVisible(false);
+    setCurrentCall(null);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -398,6 +433,7 @@ export default function HomeScreen() {
             onContacts={handleContacts}
             onSettings={handleSettings}
             onSafetyTips={handleSafetyTips}
+            onFakeCall={handleFakeCall}
             hasActiveCheckIn={!!activeCheckIn}
           />
         </View>
@@ -418,6 +454,21 @@ export default function HomeScreen() {
         onTimeChange={setScheduledTime}
         modalScale={modalScale}
         modalOpacity={modalOpacity}
+      />
+
+      {/* Fake Call Modal */}
+      <FakeCallModal
+        visible={fakeCallModalVisible}
+        onClose={() => setFakeCallModalVisible(false)}
+      />
+
+      {/* Incoming Call Screen */}
+      <IncomingCallScreen
+        visible={incomingCallVisible}
+        call={currentCall}
+        onAnswer={handleAnswerCall}
+        onDecline={handleDeclineCall}
+        onClose={handleCloseCall}
       />
     </SafeAreaView>
   );

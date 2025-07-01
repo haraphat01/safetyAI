@@ -11,6 +11,7 @@ interface QuickActionsProps {
   onContacts: () => void;
   onSettings: () => void;
   onSafetyTips: () => void;
+  onFakeCall: () => void;
   hasActiveCheckIn: boolean;
 }
 
@@ -19,6 +20,7 @@ export default function QuickActions({
   onContacts, 
   onSettings, 
   onSafetyTips, 
+  onFakeCall,
   hasActiveCheckIn 
 }: QuickActionsProps) {
   const colorScheme = useColorScheme();
@@ -55,6 +57,13 @@ export default function QuickActions({
         >
           <Ionicons name="shield" size={24} color={colors.tint} />
           <Text style={[styles.actionText, { color: colors.text }]}>Safety Tips</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.card }]}
+          onPress={onFakeCall}
+        >
+          <Ionicons name="call" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Fake Call</Text>
         </TouchableOpacity>
       </View>
     </View>
