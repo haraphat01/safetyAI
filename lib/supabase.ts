@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 
-// Supabase configuration
 
 // Validate configuration
 if (!supabaseUrl || !supabaseAnonKey) {

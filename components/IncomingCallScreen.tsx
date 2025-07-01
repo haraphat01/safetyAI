@@ -22,7 +22,6 @@ interface IncomingCallScreenProps {
   call: ScheduledFakeCall | null;
   onAnswer: () => void;
   onDecline: () => void;
-  onClose: () => void;
 }
 
 export default function IncomingCallScreen({
@@ -30,7 +29,6 @@ export default function IncomingCallScreen({
   call,
   onAnswer,
   onDecline,
-  onClose,
 }: IncomingCallScreenProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -43,6 +41,9 @@ export default function IncomingCallScreen({
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  
+  // Haptic feedback interval ref
+  const hapticIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (visible && call) {
@@ -85,8 +86,18 @@ export default function IncomingCallScreen({
       opacityAnim.setValue(0);
       setCallDuration(0);
       setIsAnswered(false);
+      
+      // Stop haptic feedback
+      stopHapticFeedback();
     }
   }, [visible, call, isAnswered]);
+
+  // Cleanup haptic feedback on unmount
+  useEffect(() => {
+    return () => {
+      stopHapticFeedback();
+    };
+  }, []);
 
   const startPulseAnimation = () => {
     Animated.loop(
@@ -106,20 +117,33 @@ export default function IncomingCallScreen({
   };
 
   const startHapticFeedback = () => {
-    const hapticInterval = setInterval(() => {
+    // Clear any existing interval first
+    if (hapticIntervalRef.current) {
+      clearInterval(hapticIntervalRef.current);
+    }
+    
+    // Start new haptic feedback interval
+    hapticIntervalRef.current = setInterval(() => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }, 2000);
+  };
 
-    return () => clearInterval(hapticInterval);
+  const stopHapticFeedback = () => {
+    if (hapticIntervalRef.current) {
+      clearInterval(hapticIntervalRef.current);
+      hapticIntervalRef.current = null;
+    }
   };
 
   const handleAnswer = async () => {
     setIsAnswered(true);
+    stopHapticFeedback(); // Stop the incoming call haptics
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     onAnswer();
   };
 
   const handleDecline = async () => {
+    stopHapticFeedback(); // Stop the incoming call haptics
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     onDecline();
   };
@@ -242,16 +266,7 @@ export default function IncomingCallScreen({
             )}
           </View>
 
-          {/* Additional Options */}
-          <View style={styles.optionsSection}>
-            <TouchableOpacity
-              style={[styles.optionButton, { backgroundColor: colors.card }]}
-              onPress={onClose}
-            >
-              <Ionicons name="close" size={20} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>Close</Text>
-            </TouchableOpacity>
-          </View>
+
         </Animated.View>
       </SafeAreaView>
     </Modal>
@@ -334,22 +349,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: 'white',
-  },
-  optionsSection: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  optionButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  optionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 8,
   },
 }); 

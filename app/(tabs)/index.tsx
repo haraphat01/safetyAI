@@ -387,11 +387,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleCloseCall = () => {
-    setIncomingCallVisible(false);
-    setCurrentCall(null);
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -468,7 +463,6 @@ export default function HomeScreen() {
         call={currentCall}
         onAnswer={handleAnswerCall}
         onDecline={handleDeclineCall}
-        onClose={handleCloseCall}
       />
     </SafeAreaView>
   );

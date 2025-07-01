@@ -344,6 +344,19 @@ class FakeCallService {
       this.sound = null;
     }
     this.isPlaying = false;
+    
+    // Reset audio mode to default
+    try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: false,
+        playsInSilentModeIOS: false,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
+      });
+    } catch (error) {
+      console.error('Error resetting audio mode:', error);
+    }
   }
 
   /**
@@ -579,6 +592,13 @@ class FakeCallService {
     await this.stopRingtone();
     this.scheduledCalls.clear();
     this.currentCall = null;
+    
+    // Cancel all scheduled notifications
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    } catch (error) {
+      console.error('Error canceling notifications:', error);
+    }
   }
 
   private async loadCustomContacts() {
