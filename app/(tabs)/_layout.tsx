@@ -42,7 +42,6 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
           }}
         />
-
         <Tabs.Screen
           name="safety-tips"
           options={{
@@ -52,10 +51,10 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="explore"
+          name="ai-assistant"
           options={{
-            title: 'Safety',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="shield.fill" color={color} />,
+            title: 'AI Assistant',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="sparkles" color={color} />,
           }}
         />
         <Tabs.Screen

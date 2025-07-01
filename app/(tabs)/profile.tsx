@@ -1,8 +1,11 @@
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { EmergencyContact } from '@/lib/supabase';
+import { aiSafetyMonitor, SafetySettings } from '@/services/AISafetyMonitor';
+import { emergencyService } from '@/services/EmergencyService';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Modal,
@@ -12,7 +15,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,6 +31,139 @@ export default function ProfileScreen() {
     fullName: user?.user_metadata?.full_name || '',
     email: user?.email || '',
   });
+
+  // Safety settings state
+  const [safetySettings, setSafetySettings] = useState<SafetySettings>({
+    fallDetectionEnabled: true,
+    impactDetectionEnabled: true,
+    suspiciousActivityEnabled: true,
+    sensitivity: 'medium',
+    autoSOS: false,
+  });
+  const [isMonitoring, setIsMonitoring] = useState(false);
+
+  // Emergency contacts state
+  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+  const [contactsModalVisible, setContactsModalVisible] = useState(false);
+  const [editingContact, setEditingContact] = useState<EmergencyContact | null>(null);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    relationship: '',
+  });
+
+  useEffect(() => {
+    loadSafetySettings();
+    loadContacts();
+  }, []);
+
+  const loadSafetySettings = () => {
+    const currentSettings = aiSafetyMonitor.getSettings();
+    setSafetySettings(currentSettings);
+    setIsMonitoring(aiSafetyMonitor.isMonitoringActive());
+  };
+
+  const loadContacts = async () => {
+    if (!user) return;
+
+    try {
+      const fetchedContacts = await emergencyService.getEmergencyContacts(user.id);
+      setContacts(fetchedContacts);
+    } catch (error) {
+      console.error('Error loading contacts:', error);
+    }
+  };
+
+  const handleSafetySettingChange = (key: keyof SafetySettings, value: any) => {
+    const newSettings = { ...safetySettings, [key]: value };
+    setSafetySettings(newSettings);
+    aiSafetyMonitor.setSettings(newSettings);
+  };
+
+  const toggleMonitoring = async () => {
+    try {
+      if (isMonitoring) {
+        aiSafetyMonitor.stopMonitoring();
+        setIsMonitoring(false);
+      } else {
+        await aiSafetyMonitor.startMonitoring();
+        setIsMonitoring(true);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to toggle monitoring. Please check permissions.');
+    }
+  };
+
+  const openAddContactModal = () => {
+    setEditingContact(null);
+    setContactForm({
+      name: '',
+      phone: '',
+      email: '',
+      relationship: '',
+    });
+    setContactsModalVisible(true);
+  };
+
+  const openEditContactModal = (contact: EmergencyContact) => {
+    setEditingContact(contact);
+    setContactForm({
+      name: contact.name,
+      phone: contact.phone,
+      email: contact.email || '',
+      relationship: contact.relationship,
+    });
+    setContactsModalVisible(true);
+  };
+
+  const handleSaveContact = async () => {
+    if (!user) return;
+
+    if (!contactForm.name || !contactForm.phone) {
+      Alert.alert('Error', 'Name and phone number are required');
+      return;
+    }
+
+    try {
+      if (editingContact) {
+        await emergencyService.updateEmergencyContact(editingContact.id, contactForm);
+      } else {
+        await emergencyService.addEmergencyContact(user.id, contactForm);
+      }
+      
+      setContactsModalVisible(false);
+      loadContacts();
+      Alert.alert('Success', editingContact ? 'Contact updated successfully' : 'Contact added successfully');
+    } catch (error) {
+      console.error('Error saving contact:', error);
+      Alert.alert('Error', 'Failed to save contact');
+    }
+  };
+
+  const handleDeleteContact = (contact: EmergencyContact) => {
+    Alert.alert(
+      'Delete Contact',
+      `Are you sure you want to delete ${contact.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await emergencyService.deleteEmergencyContact(contact.id);
+              loadContacts();
+              Alert.alert('Success', 'Contact deleted successfully');
+            } catch (error) {
+              console.error('Error deleting contact:', error);
+              Alert.alert('Error', 'Failed to delete contact');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const profileSections = [
     {
@@ -54,8 +190,22 @@ export default function ProfileScreen() {
       ],
     },
     {
-      title: 'App Settings',
+      title: 'Safety Settings',
       items: [
+        {
+          icon: 'shield-checkmark-outline',
+          title: 'AI Safety Monitor',
+          subtitle: isMonitoring ? 'Active' : 'Inactive',
+          action: toggleMonitoring,
+          toggle: true,
+          toggleValue: isMonitoring,
+        },
+        {
+          icon: 'people-outline',
+          title: 'Emergency Contacts',
+          subtitle: `${contacts.length} contact${contacts.length !== 1 ? 's' : ''}`,
+          action: openAddContactModal,
+        },
         {
           icon: 'notifications-outline',
           title: 'Notifications',
@@ -72,11 +222,53 @@ export default function ProfileScreen() {
           toggle: true,
           toggleValue: locationEnabled,
         },
+      ],
+    },
+    {
+      title: 'AI Detection Settings',
+      items: [
         {
-          icon: 'moon-outline',
-          title: 'Dark Mode',
-          subtitle: colorScheme === 'dark' ? 'Enabled' : 'Disabled',
-          action: () => Alert.alert('Theme', 'Theme settings coming soon!'),
+          icon: 'warning-outline',
+          title: 'Fall Detection',
+          subtitle: 'Detect potential falls and accidents',
+          action: () => handleSafetySettingChange('fallDetectionEnabled', !safetySettings.fallDetectionEnabled),
+          toggle: true,
+          toggleValue: safetySettings.fallDetectionEnabled,
+        },
+        {
+          icon: 'flash-outline',
+          title: 'Impact Detection',
+          subtitle: 'Detect sudden impacts or collisions',
+          action: () => handleSafetySettingChange('impactDetectionEnabled', !safetySettings.impactDetectionEnabled),
+          toggle: true,
+          toggleValue: safetySettings.impactDetectionEnabled,
+        },
+        {
+          icon: 'eye-outline',
+          title: 'Suspicious Activity',
+          subtitle: 'Monitor for unusual movement patterns',
+          action: () => handleSafetySettingChange('suspiciousActivityEnabled', !safetySettings.suspiciousActivityEnabled),
+          toggle: true,
+          toggleValue: safetySettings.suspiciousActivityEnabled,
+        },
+        {
+          icon: 'settings-outline',
+          title: 'Sensitivity Level',
+          subtitle: safetySettings.sensitivity.charAt(0).toUpperCase() + safetySettings.sensitivity.slice(1),
+          action: () => {
+            const levels = ['low', 'medium', 'high'];
+            const currentIndex = levels.indexOf(safetySettings.sensitivity);
+            const nextLevel = levels[(currentIndex + 1) % levels.length];
+            handleSafetySettingChange('sensitivity', nextLevel);
+          },
+        },
+        {
+          icon: 'alert-circle-outline',
+          title: 'Auto SOS',
+          subtitle: 'Automatically send SOS for high-confidence threats',
+          action: () => handleSafetySettingChange('autoSOS', !safetySettings.autoSOS),
+          toggle: true,
+          toggleValue: safetySettings.autoSOS,
         },
       ],
     },
@@ -156,6 +348,37 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
       ))}
+    </View>
+  );
+
+  const renderContact = ({ item }: { item: EmergencyContact }) => (
+    <View style={[styles.contactCard, { backgroundColor: colors.card }]}>
+      <View style={styles.contactInfo}>
+        <View style={styles.contactHeader}>
+          <Text style={[styles.contactName, { color: colors.text }]}>{item.name}</Text>
+          <Text style={[styles.contactRelationship, { color: colors.tabIconDefault }]}>
+            {item.relationship}
+          </Text>
+        </View>
+        <Text style={[styles.contactPhone, { color: colors.text }]}>{item.phone}</Text>
+        {item.email && (
+          <Text style={[styles.contactEmail, { color: colors.tabIconDefault }]}>{item.email}</Text>
+        )}
+      </View>
+      <View style={styles.contactActions}>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.tint }]}
+          onPress={() => openEditContactModal(item)}
+        >
+          <Ionicons name="pencil" size={16} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: '#FF6B6B' }]}
+          onPress={() => handleDeleteContact(item)}
+        >
+          <Ionicons name="trash" size={16} color="white" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -254,6 +477,85 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Emergency Contacts Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={contactsModalVisible}
+        onRequestClose={() => setContactsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {editingContact ? 'Edit Contact' : 'Add Emergency Contact'}
+              </Text>
+              <TouchableOpacity onPress={() => setContactsModalVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.tabIconDefault} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.form}>
+              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
+                <Ionicons name="person-outline" size={20} color={colors.tabIconDefault} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Full Name"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={contactForm.name}
+                  onChangeText={(text) => setContactForm({ ...contactForm, name: text })}
+                />
+              </View>
+
+              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
+                <Ionicons name="call-outline" size={20} color={colors.tabIconDefault} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Phone Number"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={contactForm.phone}
+                  onChangeText={(text) => setContactForm({ ...contactForm, phone: text })}
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
+                <Ionicons name="mail-outline" size={20} color={colors.tabIconDefault} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Email (Optional)"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={contactForm.email}
+                  onChangeText={(text) => setContactForm({ ...contactForm, email: text })}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
+                <Ionicons name="heart-outline" size={20} color={colors.tabIconDefault} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Relationship"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={contactForm.relationship}
+                  onChangeText={(text) => setContactForm({ ...contactForm, relationship: text })}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: colors.tint }]}
+                onPress={handleSaveContact}
+              >
+                <Text style={[styles.saveButtonText, { color: colors.buttonText }]}>
+                  {editingContact ? 'Update Contact' : 'Add Contact'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -339,6 +641,53 @@ const styles = StyleSheet.create({
   },
   settingSubtitle: {
     fontSize: 14,
+  },
+  contactCard: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  contactInfo: {
+    flex: 1,
+  },
+  contactHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  contactName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  contactRelationship: {
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  contactPhone: {
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  contactEmail: {
+    fontSize: 12,
+  },
+  contactActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   signOutButton: {
     flexDirection: 'row',

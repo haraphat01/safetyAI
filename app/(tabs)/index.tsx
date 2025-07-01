@@ -350,7 +350,7 @@ export default function HomeScreen() {
   };
 
   const handleSettings = () => {
-    router.push('/(tabs)/explore');
+    router.push('/(tabs)/profile');
   };
 
   const handleSafetyTips = () => {

@@ -3,7 +3,6 @@ import * as SecureStore from 'expo-secure-store';
 
 // Supabase configuration
 
-
 // Validate configuration
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase configuration. Please check your environment variables.');
