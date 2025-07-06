@@ -357,8 +357,8 @@ export default function HomeScreen() {
     await resolveSOS();
   };
 
-  const handleContacts = () => {
-    router.push('/(tabs)/contacts');
+  const handleFollowMe = () => {
+    router.push('/(tabs)/follow-me');
   };
 
   const handleSettings = () => {
@@ -371,6 +371,10 @@ export default function HomeScreen() {
 
   const handleFakeCall = () => {
     setFakeCallModalVisible(true);
+  };
+
+  const handleSafetyZones = () => {
+    router.push('/(tabs)/safety-zones');
   };
 
   const handleAnswerCall = async () => {
@@ -425,10 +429,11 @@ export default function HomeScreen() {
           
           <QuickActions
             onCheckIn={handleCheckIn}
-            onContacts={handleContacts}
+            onFollowMe={handleFollowMe}
             onSettings={handleSettings}
             onSafetyTips={handleSafetyTips}
             onFakeCall={handleFakeCall}
+            onSafetyZones={handleSafetyZones}
             hasActiveCheckIn={!!activeCheckIn}
           />
         </View>

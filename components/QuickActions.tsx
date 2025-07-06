@@ -8,19 +8,21 @@ const { width } = Dimensions.get('window');
 
 interface QuickActionsProps {
   onCheckIn: () => void;
-  onContacts: () => void;
+  onFollowMe: () => void;
   onSettings: () => void;
   onSafetyTips: () => void;
   onFakeCall: () => void;
+  onSafetyZones: () => void;
   hasActiveCheckIn: boolean;
 }
 
 export default function QuickActions({ 
   onCheckIn, 
-  onContacts, 
+  onFollowMe, 
   onSettings, 
   onSafetyTips, 
   onFakeCall,
+  onSafetyZones,
   hasActiveCheckIn 
 }: QuickActionsProps) {
   const colorScheme = useColorScheme();
@@ -34,15 +36,15 @@ export default function QuickActions({
           onPress={onCheckIn}
           disabled={hasActiveCheckIn}
         >
-          <Ionicons name="location" size={24} color={colors.tint} />
+          <Ionicons name="time" size={24} color={colors.tint} />
           <Text style={[styles.actionText, { color: colors.text }]}>Check In</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
-          onPress={onContacts}
+          onPress={onFollowMe}
         >
-          <Ionicons name="people" size={24} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.text }]}>Contacts</Text>
+          <Ionicons name="location-arrow" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Follow Me</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
@@ -64,6 +66,13 @@ export default function QuickActions({
         >
           <Ionicons name="call" size={24} color={colors.tint} />
           <Text style={[styles.actionText, { color: colors.text }]}>Fake Call</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.card }]}
+          onPress={onSafetyZones}
+        >
+          <Ionicons name="location" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Safety Zones</Text>
         </TouchableOpacity>
       </View>
     </View>
