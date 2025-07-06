@@ -117,7 +117,12 @@ class SafetyZonesService {
       const data = await response.json();
 
       if (data.status !== 'OK') {
-        console.error('Google Places API error:', data.status, data.error_message);
+        // Handle different error statuses appropriately
+        if (data.status === 'ZERO_RESULTS') {
+          console.log(`No ${type} places found in the specified radius`);
+        } else {
+          console.error('Google Places API error:', data.status, data.error_message);
+        }
         return this.getMockSafetyZonesByType(type);
       }
 
@@ -292,7 +297,12 @@ class SafetyZonesService {
       const data = await response.json();
 
       if (data.status !== 'OK') {
-        console.error('Google Places Details API error:', data.status);
+        // Handle different error statuses appropriately
+        if (data.status === 'NOT_FOUND') {
+          console.log('Safety zone details not found');
+        } else {
+          console.error('Google Places Details API error:', data.status, data.error_message);
+        }
         return null;
       }
 

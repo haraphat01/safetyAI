@@ -43,7 +43,7 @@ export default function QuickActions({
           style={[styles.actionButton, { backgroundColor: colors.card }]}
           onPress={onFollowMe}
         >
-          <Ionicons name="location-arrow" size={24} color={colors.tint} />
+          <Ionicons name="location" size={24} color={colors.tint} />
           <Text style={[styles.actionText, { color: colors.text }]}>Follow Me</Text>
         </TouchableOpacity>
         <TouchableOpacity

@@ -88,7 +88,10 @@ class AISafetyMonitor {
   }
 
   public async startMonitoring() {
-    if (this.isMonitoring) return;
+    if (this.isMonitoring) {
+      console.log('AI Safety Monitor already running');
+      return;
+    }
 
     try {
       const { available } = await DeviceMotion.getPermissionsAsync();

@@ -35,7 +35,21 @@
         }
       ],
       "expo-notifications",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow SafetyAI to use your location to find nearby safety zones and provide emergency assistance.",
+          "locationAlwaysPermission": "Allow SafetyAI to use your location in the background for continuous safety monitoring.",
+          "locationWhenInUsePermission": "Allow SafetyAI to use your location to find nearby safety zones."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow SafetyAI to access motion sensors for fall detection and safety monitoring."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
