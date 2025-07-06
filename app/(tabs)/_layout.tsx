@@ -58,6 +58,22 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.circle.fill" color={color} />,
           }}
         />
+        <Tabs.Screen
+          name="safety-zones"
+          options={{
+            title: 'Safety Zones',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="location.fill" color={color} />,
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="follow-me"
+          options={{
+            title: 'Follow Me',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="location.circle.fill" color={color} />,
+            href: null,
+          }}
+        />
       </Tabs>
     </AuthGuard>
   );

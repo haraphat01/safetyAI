@@ -33,11 +33,10 @@ export default function QuickActions({
       <View className="actionGrid" style={styles.actionGrid}>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
-          onPress={onCheckIn}
-          disabled={hasActiveCheckIn}
+          onPress={onFakeCall}
         >
-          <Ionicons name="time" size={24} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.text }]}>Check In</Text>
+          <Ionicons name="call" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Fake Call</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
@@ -48,10 +47,18 @@ export default function QuickActions({
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
-          onPress={onSettings}
+          onPress={onSafetyZones}
         >
-          <Ionicons name="settings" size={24} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.text }]}>Settings</Text>
+          <Ionicons name="location" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Safety Zones</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: colors.card }]}
+          onPress={onCheckIn}
+          disabled={hasActiveCheckIn}
+        >
+          <Ionicons name="time" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Check In</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
@@ -62,17 +69,10 @@ export default function QuickActions({
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.card }]}
-          onPress={onFakeCall}
+          onPress={onSettings}
         >
-          <Ionicons name="call" size={24} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.text }]}>Fake Call</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: colors.card }]}
-          onPress={onSafetyZones}
-        >
-          <Ionicons name="location" size={24} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.text }]}>Safety Zones</Text>
+          <Ionicons name="settings" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Settings</Text>
         </TouchableOpacity>
       </View>
     </View>
