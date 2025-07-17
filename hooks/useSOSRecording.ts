@@ -12,38 +12,59 @@ import { Alert } from 'react-native';
 export function useSOSRecording() {
   const { user } = useAuth();
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [sosIntervalId, setSosIntervalId] = useState<ReturnType<typeof setInterval> | null>(null);
+  const [sosIntervalId, setSosIntervalId] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [recordingTimer, setRecordingTimer] = useState<number>(0);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [recordingsSent, setRecordingsSent] = useState<number>(0);
   const isFirstSendRef = useRef<boolean>(true);
+  const isSOSLoopActiveRef = useRef<boolean>(false);
+  const currentRecordingRef = useRef<Audio.Recording | null>(null);
 
   // Helper to start audio recording
   const startRecording = async () => {
     try {
-      if (recording) {
-        // Already recording, do not start another
-        return recording;
+      // Check the ref instead of state to avoid closure issues
+      if (currentRecordingRef.current) {
+        console.log('Warning: Recording already exists, cleaning up first...');
+        try {
+          await currentRecordingRef.current.stopAndUnloadAsync();
+        } catch (cleanupErr) {
+          console.error('Error cleaning up existing recording:', cleanupErr);
+        }
+        currentRecordingRef.current = null;
+        setRecording(null);
+        // Wait a bit to ensure cleanup
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
+      
       // Request permissions
       const { status } = await Audio.requestPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission required', 'Audio recording permission is required.');
         return null;
       }
+      
       // Prepare recording
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
+      
       const rec = new Audio.Recording();
       await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
       await rec.startAsync();
+      
+      // Update both state and ref
       setRecording(rec);
+      currentRecordingRef.current = rec;
+      console.log('New recording started successfully');
       return rec;
     } catch (err) {
       console.error('Failed to start recording', err);
+      // Make sure recording state is cleared on error
+      setRecording(null);
+      currentRecordingRef.current = null;
       return null;
     }
   };
@@ -51,14 +72,26 @@ export function useSOSRecording() {
   // Helper to stop audio recording
   const stopRecording = async () => {
     try {
-      if (!recording) return null;
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      const recordingToStop = currentRecordingRef.current || recording;
+      if (!recordingToStop) {
+        console.log('No recording to stop');
+        return null;
+      }
+      
+      console.log('Stopping and unloading recording...');
+      await recordingToStop.stopAndUnloadAsync();
+      const uri = recordingToStop.getURI();
+      
+      // Clear both state and ref immediately
       setRecording(null);
+      currentRecordingRef.current = null;
+      console.log('Recording stopped successfully, URI:', uri);
       return uri;
     } catch (err) {
       console.error('Failed to stop recording', err);
+      // Always clear the recording state even on error
       setRecording(null);
+      currentRecordingRef.current = null;
       return null;
     }
   };
@@ -301,40 +334,122 @@ export function useSOSRecording() {
     }
   };
 
-  // Update startSosLoop to use a more reliable approach
+  // Start continuous SOS recording loop - records for 1 minute, sends, then starts next recording
   const startSosLoop = async () => {
-    // Start first recording
-    let rec = await startRecording();
-    startRecordingTimer();
+    console.log('=== STARTING CONTINUOUS SOS LOOP ===');
     
-    // Set up interval for every 1 minute (as backup)
-    const intervalId = setInterval(async () => {
-      if (recording) {
-        stopRecordingTimer();
-        const audioUri = await stopRecording();
-        if (audioUri) {
-          if (isFirstSendRef.current && user) {
-            await emergencyService.sendSOS(user.id, 'manual');
-            isFirstSendRef.current = false;
-          }
-          await sendSosData(audioUri);
-        }
-        // Start new recording for next 1 minute
-        rec = await startRecording();
-        startRecordingTimer();
+    // Mark SOS loop as active
+    isSOSLoopActiveRef.current = true;
+    
+    // Send initial SOS alert to create the emergency record
+    if (isFirstSendRef.current && user) {
+      await emergencyService.sendSOS(user.id, 'manual');
+      isFirstSendRef.current = false;
+    }
+    
+    // Start the continuous recording cycle
+    const startRecordingCycle = async () => {
+      // Check if loop is still active before starting new cycle
+      if (!isSOSLoopActiveRef.current) {
+        console.log('SOS loop no longer active, stopping cycle');
+        return;
       }
-    }, 1 * 60 * 1000); // every 1 minute
-    setSosIntervalId(intervalId);
+      
+      console.log('Starting new recording cycle...');
+      
+      // Ensure no existing recording before starting new one
+      if (currentRecordingRef.current) {
+        console.log('Cleaning up existing recording before starting new cycle...');
+        await stopRecording();
+        // Wait a bit more to ensure cleanup
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      // Start recording
+      const rec = await startRecording();
+      if (!rec) {
+        console.error('Failed to start recording, retrying in 2 seconds...');
+        if (isSOSLoopActiveRef.current) {
+          setTimeout(() => startRecordingCycle(), 2000);
+        }
+        return;
+      }
+      
+      // Start timer
+      startRecordingTimer();
+      
+      // Set timeout for 1 minute to automatically send and start next cycle
+      const timeoutId = setTimeout(async () => {
+        console.log('1 minute completed, stopping recording and sending...');
+        
+        try {
+          // Stop current recording and timer
+          stopRecordingTimer();
+          const audioUri = await stopRecording();
+          
+          // Ensure recording is fully cleaned up
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          if (audioUri) {
+            // Send the recording and wait for completion
+            await sendSosData(audioUri);
+            console.log('Recording sent successfully');
+          }
+          
+          // Start next cycle if SOS is still active
+          if (isSOSLoopActiveRef.current) {
+            console.log('Starting next recording cycle...');
+            // Use setTimeout to ensure this runs in next event loop
+            setTimeout(() => startRecordingCycle(), 100);
+          }
+        } catch (error) {
+          console.error('Error in recording cycle:', error);
+          // Ensure recording is cleaned up even on error
+          if (recording) {
+            try {
+              await stopRecording();
+            } catch (cleanupError) {
+              console.error('Error during cleanup:', cleanupError);
+              // Force clear the recording state
+              setRecording(null);
+            }
+          }
+          
+          // Try to start next cycle anyway if SOS is still active
+          if (isSOSLoopActiveRef.current) {
+            console.log('Retrying next recording cycle after error...');
+            setTimeout(() => startRecordingCycle(), 2000); // Retry after 2 seconds
+          }
+        }
+      }, 60 * 1000); // 60 seconds
+      
+      // Store the timeout ID so we can clear it when stopping
+      setSosIntervalId(timeoutId);
+    };
+    
+    // Start the first recording cycle
+    startRecordingCycle();
   };
 
   // Stop the SOS audio loop
   const stopSosLoop = async () => {
+    console.log('=== STOPPING SOS LOOP ===');
+    
+    // Mark SOS loop as inactive to stop any pending cycles
+    isSOSLoopActiveRef.current = false;
+    
     if (sosIntervalId) {
-      clearInterval(sosIntervalId);
+      clearTimeout(sosIntervalId); // Changed from clearInterval to clearTimeout
       setSosIntervalId(null);
     }
+    
     stopRecordingTimer();
     await stopRecording();
+    
+    // Reset the first send flag for next SOS session
+    isFirstSendRef.current = true;
+    
+    console.log('SOS loop stopped successfully');
   };
 
   // Cleanup on unmount

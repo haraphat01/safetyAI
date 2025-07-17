@@ -11,12 +11,12 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  View
+    Alert,
+    Animated,
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -132,24 +132,7 @@ export default function HomeScreen() {
     }
   }, [user?.id]);
 
-  // Add a useEffect to handle the 1-minute timer completion
-  useEffect(() => {
-    if (isSOSActive && recording && recordingTimer >= 60) {
-      // Reset timer and send the recording
-      const sendCurrentRecording = async () => {
-        stopRecordingTimer();
-        const audioUri = await stopRecording();
-        if (audioUri) {
-          await sendSosData(audioUri);
-        }
-        // Start new recording if SOS is still active
-        if (isSOSActive) {
-          await startSosLoop();
-        }
-      };
-      sendCurrentRecording();
-    }
-  }, [recordingTimer, isSOSActive, recording]);
+  // The continuous recording logic is now handled entirely in the useSOSRecording hook
 
   const initializeAIMonitoring = async () => {
     try {
@@ -347,15 +330,7 @@ export default function HomeScreen() {
     }
   };
 
-  const handleStopAndSend = async () => {
-    stopRecordingTimer();
-    const audioUri = await stopRecording();
-    if (audioUri) {
-      await sendSosData(audioUri);
-    }
-    // Stop SOS completely when manually stopping recording
-    await resolveSOS();
-  };
+
 
   const handleFollowMe = () => {
     router.push('/(tabs)/follow-me');
@@ -416,7 +391,6 @@ export default function HomeScreen() {
           {isSOSActive && recording && (
             <RecordingStatus
               recordingTimer={recordingTimer}
-              onStopAndSend={handleStopAndSend}
             />
           )}
           
