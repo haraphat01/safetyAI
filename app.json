@@ -1,22 +1,32 @@
 {
   "expo": {
-    "name": "safetyAI",
-    "slug": "safetyAI",
+    "name": "safeme",
+    "slug": "safeMe",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "safetyai",
+    "scheme": "safeme",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "tech.safeme.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "tech.safeme.app",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "buildConfigFields": {
+        "VERSION_NAME": "1",
+        "VERSION_CODE": "1"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -39,20 +49,30 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow SafetyAI to use your location to find nearby safety zones and provide emergency assistance.",
-          "locationAlwaysPermission": "Allow SafetyAI to use your location in the background for continuous safety monitoring.",
-          "locationWhenInUsePermission": "Allow SafetyAI to use your location to find nearby safety zones."
+          "locationAlwaysAndWhenInUsePermission": "Allow SafeMe to use your location to find nearby safety zones and provide emergency assistance.",
+          "locationAlwaysPermission": "Allow SafeMe to use your location in the background for continuous safety monitoring.",
+          "locationWhenInUsePermission": "Allow SafeMe to use your location to find nearby safety zones."
         }
       ],
       [
         "expo-sensors",
         {
-          "motionPermission": "Allow SafetyAI to access motion sensors for fall detection and safety monitoring."
+          "motionPermission": "Allow SafeMe to access motion sensors for fall detection and safety monitoring."
         }
-      ]
+      ],
+      "./withAndroidAppComponentFactory.js",
+      "./withAndroidDependencyResolution.js"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "REVENUECAT_IOS_API_KEY": "appl_DEllasoRpXqutxqgDnFTHtmGD",
+      "REVENUECAT_ANDROID_API_KEY": "goog_NxiLUQTCfIMuKEdqXxpLcDBqq",
+      "router": {},
+      "eas": {
+        "projectId": "3b7b1429-e6db-4d35-9106-6e5c946ecff8"
+      }
     }
   }
 }

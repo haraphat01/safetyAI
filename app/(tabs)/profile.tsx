@@ -1,3 +1,4 @@
+import SubscriptionModal from '@/components/SubscriptionModal';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -27,6 +28,7 @@ export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     fullName: user?.user_metadata?.full_name || '',
     email: user?.email || '',
@@ -179,7 +181,7 @@ export default function ProfileScreen() {
           icon: 'card-outline',
           title: 'Subscription',
           subtitle: 'Free Plan - Upgrade to Premium',
-          action: () => Alert.alert('Premium', 'Premium features coming soon!'),
+          action: () => setSubscriptionModalVisible(true),
         },
         {
           icon: 'shield-outline',
@@ -556,6 +558,12 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        visible={subscriptionModalVisible}
+        onClose={() => setSubscriptionModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
