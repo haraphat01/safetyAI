@@ -119,13 +119,8 @@ class EmergencyService {
 
       if (error) throw error;
 
-      // Send real-time notification to emergency contacts
-      await this.notifyEmergencyContacts(userId, {
-        type: 'sos',
-        location,
-        userId,
-        message: 'SOS Alert: Immediate assistance needed!',
-      });
+      // Note: Emergency contact notifications are handled by the recording hook
+      // to ensure complete data (audio, battery, network info) is included
 
       // Send to Supabase Realtime
       await supabase.channel('emergency').send({
@@ -392,12 +387,53 @@ class EmergencyService {
     try {
       const contacts = await this.getEmergencyContacts(userId);
       
-      // In a real app, this would send SMS/email notifications
-      // For now, we'll just log the notification
       console.log('Notifying emergency contacts:', {
-        contacts: contacts.map(c => ({ name: c.name, phone: c.phone })),
+        contacts: contacts.map(c => ({ 
+          name: c.name, 
+          phone: c.phone, 
+          email: c.email,
+          whatsapp: c.whatsapp 
+        })),
         message,
       });
+
+      // Send email notifications to contacts with email addresses
+      const emailContacts = contacts.filter(c => c.email);
+      if (emailContacts.length > 0) {
+        try {
+          const emailResponse = await supabase.functions.invoke('sos-email', {
+            body: {
+              userId,
+              location: message.location,
+              battery: null, // Will be populated by the calling function if available
+              audioUrl: null, // Will be populated by the calling function if available
+              networkInfo: null, // Will be populated by the calling function if available
+            }
+          });
+          console.log('Email notifications sent:', emailResponse);
+        } catch (emailError) {
+          console.error('Error sending email notifications:', emailError);
+        }
+      }
+
+      // Send WhatsApp notifications to contacts with WhatsApp numbers
+      const whatsappContacts = contacts.filter(c => c.whatsapp);
+      if (whatsappContacts.length > 0) {
+        try {
+          const whatsappResponse = await supabase.functions.invoke('sos-whatsapp', {
+            body: {
+              userId,
+              location: message.location,
+              battery: null, // Will be populated by the calling function if available
+              audioUrl: null, // Will be populated by the calling function if available
+              networkInfo: null, // Will be populated by the calling function if available
+            }
+          });
+          console.log('WhatsApp notifications sent:', whatsappResponse);
+        } catch (whatsappError) {
+          console.error('Error sending WhatsApp notifications:', whatsappError);
+        }
+      }
 
       // Send to Supabase Realtime for real-time notifications
       await supabase.channel('emergency').send({

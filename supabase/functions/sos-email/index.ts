@@ -8,7 +8,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 Deno.serve(async (req)=>{
   const { userId, location, battery, audioUrl, networkInfo } = await req.json();
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const { data: contacts, error } = await supabase.from("emergency_contacts").select("email").eq("user_id", userId);
+  const { data: contacts, error } = await supabase.from("emergency_contacts").select("name, email, whatsapp").eq("user_id", userId).not("email", "is", null);
   if (error || !contacts || contacts.length === 0) {
     return new Response(JSON.stringify({
       error: "No contacts found or DB error"

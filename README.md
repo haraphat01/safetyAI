@@ -10,7 +10,7 @@ A comprehensive personal safety application built with Expo and React Native, fe
   - Impact detection  
   - Suspicious activity monitoring
 - **Emergency SOS System**: One-tap emergency alerts with GPS location
-- **Emergency Contacts**: Manage and notify trusted contacts
+- **Emergency Contacts**: Manage and notify trusted contacts via email and WhatsApp
 - **Safety Check-ins**: Scheduled location check-ins
 - **Voice-Activated SOS**: Hands-free emergency activation
 

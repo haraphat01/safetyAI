@@ -49,6 +49,7 @@ export interface EmergencyContact {
   name: string;
   phone: string;
   email?: string;
+  whatsapp?: string;
   relationship: string;
   created_at: string;
 }

@@ -67,8 +67,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "REVENUECAT_IOS_API_KEY": "appl_DEllasoRpXqutxqgDnFTHtmGD",
-      "REVENUECAT_ANDROID_API_KEY": "goog_NxiLUQTCfIMuKEdqXxpLcDBqq",
+      "REVENUECAT_IOS_API_KEY":"appl_lADjdVZswCOgIrhVJNZdbmbhL",
+      "REVENUECAT_ANDROID_API_KEY":"goog_ySCdsnXfajdqQSkeKRhEAyMBw",
       "router": {},
       "eas": {
         "projectId": "3b7b1429-e6db-4d35-9106-6e5c946ecff8"

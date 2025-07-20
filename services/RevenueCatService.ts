@@ -1,6 +1,6 @@
-import Purchases, { PurchasesOffering, CustomerInfo, PurchasesPackage } from 'react-native-purchases';
-import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 
 // RevenueCat API Keys - Use expo-constants to access them from app.json
 const REVENUECAT_API_KEYS = {
@@ -10,8 +10,8 @@ const REVENUECAT_API_KEYS = {
 
 // Subscription Product IDs
 export const SUBSCRIPTION_PRODUCTS = {
-  MONTHLY: 'safetyai_monthly_premium',
-  YEARLY: 'safetyai_yearly_premium',
+  MONTHLY: 'safeme_monthly_premium',
+  YEARLY: 'safeme_yearly_premium',
 };
 
 // Subscription Tiers
@@ -44,6 +44,18 @@ class RevenueCatService {
 
     try {
       const apiKey = Platform.OS === 'ios' ? REVENUECAT_API_KEYS.ios : REVENUECAT_API_KEYS.android;
+      
+      // Debug logging
+      console.log('RevenueCat initialization:', {
+        platform: Platform.OS,
+        hasApiKey: !!apiKey,
+        apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'none',
+        userId,
+      });
+      
+      if (!apiKey) {
+        throw new Error(`RevenueCat API key not found for platform: ${Platform.OS}`);
+      }
       
       await Purchases.configure({
         apiKey,
@@ -230,14 +242,15 @@ class RevenueCatService {
     try {
       const product = packageToFormat.product;
       const identifier = product.identifier;
+      const price = product.priceString;
       
       if (identifier.includes('monthly')) {
-        return '$5/month after 7-day free trial';
+        return `${price}/month after 7-day free trial`;
       } else if (identifier.includes('yearly') || identifier.includes('annual')) {
-        return '$55/year after 7-day free trial';
+        return `${price}/year after 7-day free trial`;
       }
       
-      return product.description;
+      return `${price} after 7-day free trial`;
     } catch (error) {
       console.error('Failed to get package description:', error);
       return 'Premium features with 7-day free trial';

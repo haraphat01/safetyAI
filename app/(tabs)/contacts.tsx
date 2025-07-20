@@ -31,6 +31,7 @@ export default function ContactsScreen() {
     name: '',
     phone: '',
     email: '',
+    whatsapp: '',
     relationship: '',
   });
 
@@ -59,6 +60,7 @@ export default function ContactsScreen() {
       name: '',
       phone: '',
       email: '',
+      whatsapp: '',
       relationship: '',
     });
     setModalVisible(true);
@@ -70,6 +72,7 @@ export default function ContactsScreen() {
       name: contact.name,
       phone: contact.phone,
       email: contact.email || '',
+      whatsapp: contact.whatsapp || '',
       relationship: contact.relationship,
     });
     setModalVisible(true);
@@ -135,6 +138,12 @@ export default function ContactsScreen() {
         <Text style={[styles.contactPhone, { color: colors.text }]}>{item.phone}</Text>
         {item.email && (
           <Text style={[styles.contactEmail, { color: colors.tabIconDefault }]}>{item.email}</Text>
+        )}
+        {item.whatsapp && (
+          <View style={styles.whatsappContainer}>
+            <Ionicons name="logo-whatsapp" size={12} color="#25D366" />
+            <Text style={[styles.contactWhatsapp, { color: colors.tabIconDefault }]}>{item.whatsapp}</Text>
+          </View>
         )}
       </View>
       <View style={styles.contactActions}>
@@ -250,6 +259,18 @@ export default function ContactsScreen() {
                   onChangeText={(text) => setFormData({ ...formData, email: text })}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                />
+              </View>
+
+              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
+                <Ionicons name="logo-whatsapp" size={20} color={colors.tabIconDefault} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="WhatsApp Number (Optional)"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={formData.whatsapp}
+                  onChangeText={(text) => setFormData({ ...formData, whatsapp: text })}
+                  keyboardType="phone-pad"
                 />
               </View>
 
@@ -376,6 +397,15 @@ const styles = StyleSheet.create({
   },
   contactEmail: {
     fontSize: 12,
+  },
+  whatsappContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  contactWhatsapp: {
+    fontSize: 12,
+    marginLeft: 4,
   },
   contactActions: {
     flexDirection: 'row',

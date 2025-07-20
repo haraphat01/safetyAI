@@ -37,24 +37,24 @@ export function useSOSRecording() {
         // Wait a bit to ensure cleanup
         await new Promise(resolve => setTimeout(resolve, 300));
       }
-      
+
       // Request permissions
       const { status } = await Audio.requestPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission required', 'Audio recording permission is required.');
         return null;
       }
-      
+
       // Prepare recording
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
-      
+
       const rec = new Audio.Recording();
       await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
       await rec.startAsync();
-      
+
       // Update both state and ref
       setRecording(rec);
       currentRecordingRef.current = rec;
@@ -77,11 +77,11 @@ export function useSOSRecording() {
         console.log('No recording to stop');
         return null;
       }
-      
+
       console.log('Stopping and unloading recording...');
       await recordingToStop.stopAndUnloadAsync();
       const uri = recordingToStop.getURI();
-      
+
       // Clear both state and ref immediately
       setRecording(null);
       currentRecordingRef.current = null;
@@ -259,8 +259,8 @@ export function useSOSRecording() {
         throw new Error('No authentication token available');
       }
 
-      // Call backend with enhanced data including address, network info, and audio URL
-      const response = await fetch('https://pytenwpowmbdpbtonase.supabase.co/functions/v1/sos-email', {
+      // Call email backend with enhanced data including address, network info, and audio URL
+      const emailResponse = await fetch('https://pytenwpowmbdpbtonase.supabase.co/functions/v1/sos-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,15 +269,50 @@ export function useSOSRecording() {
         body: JSON.stringify(sosPayload),
       });
 
-      const responseData = await response.json();
-      console.log('=== EDGE FUNCTION RESPONSE ===');
-      console.log('status:', response.status);
-      console.log('response:', responseData);
-      console.log('=============================');
+      const emailResponseData = await emailResponse.json();
+      console.log('=== EMAIL FUNCTION RESPONSE ===');
+      console.log('status:', emailResponse.status);
+      console.log('response:', emailResponseData);
+      console.log('===============================');
 
-      if (!response.ok) {
-        console.error('Edge function failed:', responseData);
-        throw new Error(`API call failed: ${response.status} - ${responseData.message || 'Unknown error'}`);
+      // Call WhatsApp backend with the same data
+      const whatsappResponse = await fetch('https://pytenwpowmbdpbtonase.supabase.co/functions/v1/sos-whatsapp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(sosPayload),
+      });
+
+      const whatsappResponseData = await whatsappResponse.json();
+      console.log('=== WHATSAPP FUNCTION RESPONSE ===');
+      console.log('status:', whatsappResponse.status);
+      console.log('response:', whatsappResponseData);
+      console.log('==================================');
+
+      // Check if at least one notification method succeeded
+      const emailSuccess = emailResponse.ok;
+      const whatsappSuccess = whatsappResponse.ok;
+
+      if (!emailSuccess && !whatsappSuccess) {
+        console.error('Both email and WhatsApp notifications failed');
+        console.error('Email error:', emailResponseData);
+        console.error('WhatsApp error:', whatsappResponseData);
+        throw new Error(`All notification methods failed. Email: ${emailResponseData.error || 'Unknown error'}, WhatsApp: ${whatsappResponseData.error || 'Unknown error'}`);
+      }
+
+      // Log success/failure for each method
+      if (emailSuccess) {
+        console.log('Email notifications sent successfully');
+      } else {
+        console.warn('Email notifications failed:', emailResponseData.error);
+      }
+
+      if (whatsappSuccess) {
+        console.log('WhatsApp notifications sent successfully');
+      } else {
+        console.warn('WhatsApp notifications failed:', whatsappResponseData.error);
       }
 
       // --- INSERT SOS DATA INTO THE DATABASE ---
@@ -337,16 +372,16 @@ export function useSOSRecording() {
   // Start continuous SOS recording loop - records for 1 minute, sends, then starts next recording
   const startSosLoop = async () => {
     console.log('=== STARTING CONTINUOUS SOS LOOP ===');
-    
+
     // Mark SOS loop as active
     isSOSLoopActiveRef.current = true;
-    
+
     // Send initial SOS alert to create the emergency record
     if (isFirstSendRef.current && user) {
       await emergencyService.sendSOS(user.id, 'manual');
       isFirstSendRef.current = false;
     }
-    
+
     // Start the continuous recording cycle
     const startRecordingCycle = async () => {
       // Check if loop is still active before starting new cycle
@@ -354,9 +389,9 @@ export function useSOSRecording() {
         console.log('SOS loop no longer active, stopping cycle');
         return;
       }
-      
+
       console.log('Starting new recording cycle...');
-      
+
       // Ensure no existing recording before starting new one
       if (currentRecordingRef.current) {
         console.log('Cleaning up existing recording before starting new cycle...');
@@ -364,7 +399,7 @@ export function useSOSRecording() {
         // Wait a bit more to ensure cleanup
         await new Promise(resolve => setTimeout(resolve, 200));
       }
-      
+
       // Start recording
       const rec = await startRecording();
       if (!rec) {
@@ -374,28 +409,28 @@ export function useSOSRecording() {
         }
         return;
       }
-      
+
       // Start timer
       startRecordingTimer();
-      
+
       // Set timeout for 1 minute to automatically send and start next cycle
       const timeoutId = setTimeout(async () => {
         console.log('1 minute completed, stopping recording and sending...');
-        
+
         try {
           // Stop current recording and timer
           stopRecordingTimer();
           const audioUri = await stopRecording();
-          
+
           // Ensure recording is fully cleaned up
           await new Promise(resolve => setTimeout(resolve, 300));
-          
+
           if (audioUri) {
             // Send the recording and wait for completion
             await sendSosData(audioUri);
             console.log('Recording sent successfully');
           }
-          
+
           // Start next cycle if SOS is still active
           if (isSOSLoopActiveRef.current) {
             console.log('Starting next recording cycle...');
@@ -414,7 +449,7 @@ export function useSOSRecording() {
               setRecording(null);
             }
           }
-          
+
           // Try to start next cycle anyway if SOS is still active
           if (isSOSLoopActiveRef.current) {
             console.log('Retrying next recording cycle after error...');
@@ -422,11 +457,11 @@ export function useSOSRecording() {
           }
         }
       }, 60 * 1000); // 60 seconds
-      
+
       // Store the timeout ID so we can clear it when stopping
       setSosIntervalId(timeoutId);
     };
-    
+
     // Start the first recording cycle
     startRecordingCycle();
   };
@@ -434,21 +469,21 @@ export function useSOSRecording() {
   // Stop the SOS audio loop
   const stopSosLoop = async () => {
     console.log('=== STOPPING SOS LOOP ===');
-    
+
     // Mark SOS loop as inactive to stop any pending cycles
     isSOSLoopActiveRef.current = false;
-    
+
     if (sosIntervalId) {
       clearTimeout(sosIntervalId); // Changed from clearInterval to clearTimeout
       setSosIntervalId(null);
     }
-    
+
     stopRecordingTimer();
     await stopRecording();
-    
+
     // Reset the first send flag for next SOS session
     isFirstSendRef.current = true;
-    
+
     console.log('SOS loop stopped successfully');
   };
 

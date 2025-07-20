@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - SafeMe</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .support-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 120px 20px 50px;
+        }
+        .support-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .support-header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .support-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .support-card img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+        }
+        .support-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        .support-card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .support-card a {
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .faq-section {
+            margin-top: 60px;
+        }
+        .faq-section h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2rem;
+        }
+        .faq-item {
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 20px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            border: none;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-question:hover {
+            background: #e9ecef;
+        }
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        .faq-answer.active {
+            padding: 20px;
+            max-height: 200px;
+        }
+        .faq-answer p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .faq-toggle {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        .faq-toggle.active {
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=40&h=40&fit=crop&crop=center" alt="SafeMe Logo">
+                <span>SafeMe</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#features">Features</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="privacy.html">Privacy</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="support-content">
+        <div class="support-header">
+            <h1>How Can We Help You?</h1>
+            <p>Get the support you need to stay safe with SafeMe</p>
+        </div>
+
+        <div class="support-grid">
+            <div class="support-card">
+                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60&h=60&fit=crop&crop=center" alt="Email Support">
+                <h3>Email Support</h3>
+                <p>Get help with technical issues, account problems, or general questions.</p>
+                <a href="mailto:support@safeme.tech">support@safeme.tech</a>
+            </div>
+
+            <div class="support-card">
+                <img src="https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=60&h=60&fit=crop&crop=center" alt="Emergency Help">
+                <h3>Emergency Support</h3>
+                <p>Urgent issues with emergency features or safety concerns.</p>
+                <a href="mailto:emergency@safeme.app">emergency@safeme.app</a>
+            </div>
+
+            <div class="support-card">
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=60&h=60&fit=crop&crop=center" alt="Bug Reports">
+                <h3>Bug Reports</h3>
+                <p>Report bugs, crashes, or technical issues with the app.</p>
+                <a href="mailto:bugs@safeme.app">bugs@safeme.app</a>
+            </div>
+
+            <div class="support-card">
+                <img src="https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=60&h=60&fit=crop&crop=center" alt="Feature Requests">
+                <h3>Feature Requests</h3>
+                <p>Suggest new features or improvements to make SafeMe better.</p>
+                <a href="mailto:features@safeme.tech">features@safeme.tech</a>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I set up emergency contacts?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Go to Settings > Emergency Contacts and tap "Add Contact". You can add up to 5 emergency contacts who will receive your SOS alerts and location updates during emergencies.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Why isn't my location sharing working?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Make sure you've granted location permissions to SafeMe in your device settings. Go to Settings > Privacy > Location Services and ensure SafeMe is set to "Always" for emergency features to work properly.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I cancel my subscription?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>You can cancel your subscription through your device's app store. For iOS: Settings > Apple ID > Subscriptions. For Android: Google Play Store > Account > Subscriptions.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What should I do if the SOS feature isn't working?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>First, check your internet connection and location permissions. If the issue persists, restart the app and try again. For urgent issues, contact our emergency support immediately.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I set up WhatsApp integration?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Go to Settings > Integrations > WhatsApp and follow the setup instructions. Make sure WhatsApp is installed on your device and you're logged in to your account.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can I use SafeMe without an internet connection?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Some features like fake calls work offline, but emergency alerts and location sharing require an internet connection. We recommend keeping mobile data enabled for full functionality.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I create safety zones?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Go to Safety Zones in the app, tap "Add Zone", and set the location and radius. You'll receive notifications when you or your contacts enter or leave these zones.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is my personal data secure?
+                    <span class="faq-toggle">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Yes, we use industry-standard encryption to protect your data. Please read our Privacy Policy for detailed information about how we collect, use, and protect your information.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=40&h=40&fit=crop&crop=center" alt="SafeMe Logo">
+                    <span>SafeMe</span>
+                </div>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="support.html">Support</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SafeMe. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const toggle = question.querySelector('.faq-toggle');
+                
+                // Close all other FAQ items
+                document.querySelectorAll('.faq-answer').forEach(otherAnswer => {
+                    if (otherAnswer !== answer) {
+                        otherAnswer.classList.remove('active');
+                        otherAnswer.previousElementSibling.querySelector('.faq-toggle').classList.remove('active');
+                    }
+                });
+                
+                // Toggle current FAQ item
+                answer.classList.toggle('active');
+                toggle.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>
