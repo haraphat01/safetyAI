@@ -9,6 +9,7 @@ export function useCheckIn() {
   const [activeCheckIn, setActiveCheckIn] = useState<any>(null);
   const [timer, setTimer] = useState<number>(0);
   const timerInterval = useRef<NodeJS.Timeout | null>(null);
+  const [onSOSActivated, setOnSOSActivated] = useState<(() => void) | null>(null);
 
   // Load active check-in on mount
   useEffect(() => {
@@ -44,14 +45,30 @@ export function useCheckIn() {
 
   const handleTimerElapsed = async () => {
     if (!activeCheckIn || !user) return;
-    // Mark as overdue and trigger SOS
-    await supabase
-      .from('safety_checks')
-      .update({ status: 'overdue' })
-      .eq('id', activeCheckIn.id);
-    await emergencyService.sendSOS(user.id, 'ai');
-    setActiveCheckIn(null);
-    Alert.alert('SOS Triggered', 'No check-in received. Emergency contacts have been notified.');
+    
+    try {
+      // Mark as overdue
+      await supabase
+        .from('safety_checks')
+        .update({ status: 'overdue' })
+        .eq('id', activeCheckIn.id);
+      
+      // Clear the active check-in
+      setActiveCheckIn(null);
+      
+      // Trigger the SOS activation callback if provided
+      if (onSOSActivated) {
+        onSOSActivated();
+      } else {
+        // Fallback: just send SOS message without activating full SOS mode
+        await emergencyService.sendSOS(user.id, 'check_in_overdue');
+      }
+      
+      Alert.alert('SOS Activated', 'Check-in time expired. SOS has been automatically activated.');
+    } catch (error) {
+      console.error('Error handling timer elapsed:', error);
+      Alert.alert('Error', 'Failed to activate SOS after check-in timeout.');
+    }
   };
 
   const handleStopCheckIn = async () => {
@@ -94,5 +111,6 @@ export function useCheckIn() {
     timer,
     handleStopCheckIn,
     scheduleCheckIn,
+    setOnSOSActivated,
   };
 } 

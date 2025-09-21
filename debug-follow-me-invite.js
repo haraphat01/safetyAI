@@ -51,7 +51,7 @@ async function debugFollowMeInvite() {
     if (contactsWithoutEmail.length > 0) {
       console.log('\n⚠️  Contacts without email addresses:');
       contactsWithoutEmail.forEach(contact => {
-        console.log(`   - ${contact.name} (${contact.phone})`);
+        console.log(`   - ${contact.name} (${contact.whatsapp})`);
       });
       console.log('\n   These contacts cannot receive email invites.');
     }
@@ -82,7 +82,7 @@ async function debugFollowMeInvite() {
       .from('follow_me_participants')
       .select(`
         *,
-        contact:emergency_contacts(name, email, phone),
+        contact:emergency_contacts(name, email, whatsapp),
         session:follow_me_sessions(session_name, is_active)
       `)
       .eq('invited_by', user.id);

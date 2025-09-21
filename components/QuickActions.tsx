@@ -71,8 +71,8 @@ export default function QuickActions({
           style={[styles.actionButton, { backgroundColor: colors.card }]}
           onPress={onSettings}
         >
-          <Ionicons name="settings" size={24} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.text }]}>Settings</Text>
+          <Ionicons name="person" size={24} color={colors.tint} />
+          <Text style={[styles.actionText, { color: colors.text }]}>Profile</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -29,7 +29,6 @@ export default function ContactsScreen() {
   const [editingContact, setEditingContact] = useState<EmergencyContact | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    phone: '',
     email: '',
     whatsapp: '',
     relationship: '',
@@ -58,7 +57,6 @@ export default function ContactsScreen() {
     setEditingContact(null);
     setFormData({
       name: '',
-      phone: '',
       email: '',
       whatsapp: '',
       relationship: '',
@@ -70,7 +68,6 @@ export default function ContactsScreen() {
     setEditingContact(contact);
     setFormData({
       name: contact.name,
-      phone: contact.phone,
       email: contact.email || '',
       whatsapp: contact.whatsapp || '',
       relationship: contact.relationship,
@@ -78,11 +75,46 @@ export default function ContactsScreen() {
     setModalVisible(true);
   };
 
+  const validateWhatsAppNumber = (number: string): boolean => {
+    // Check if number starts with + and has country code
+    const whatsappRegex = /^\+[1-9]\d{1,14}$/;
+    return whatsappRegex.test(number);
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
-    if (!formData.name || !formData.phone) {
-      Alert.alert('Error', 'Name and phone number are required');
+    // Validate all required fields
+    if (!formData.name.trim()) {
+      Alert.alert('Error', 'Name is required');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      Alert.alert('Error', 'Email is required');
+      return;
+    }
+
+    if (!formData.whatsapp.trim()) {
+      Alert.alert('Error', 'WhatsApp number is required');
+      return;
+    }
+
+    if (!formData.relationship.trim()) {
+      Alert.alert('Error', 'Relationship is required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    // Validate WhatsApp number format
+    if (!validateWhatsAppNumber(formData.whatsapp)) {
+      Alert.alert('Error', 'WhatsApp number must include country code (e.g., +1234567890)');
       return;
     }
 
@@ -135,16 +167,11 @@ export default function ContactsScreen() {
             {item.relationship}
           </Text>
         </View>
-        <Text style={[styles.contactPhone, { color: colors.text }]}>{item.phone}</Text>
-        {item.email && (
-          <Text style={[styles.contactEmail, { color: colors.tabIconDefault }]}>{item.email}</Text>
-        )}
-        {item.whatsapp && (
-          <View style={styles.whatsappContainer}>
-            <Ionicons name="logo-whatsapp" size={12} color="#25D366" />
-            <Text style={[styles.contactWhatsapp, { color: colors.tabIconDefault }]}>{item.whatsapp}</Text>
-          </View>
-        )}
+        <Text style={[styles.contactEmail, { color: colors.tabIconDefault }]}>{item.email}</Text>
+        <View style={styles.whatsappContainer}>
+          <Ionicons name="logo-whatsapp" size={12} color="#25D366" />
+          <Text style={[styles.contactWhatsapp, { color: colors.tabIconDefault }]}>{item.whatsapp}</Text>
+        </View>
       </View>
       <View style={styles.contactActions}>
         <TouchableOpacity
@@ -230,7 +257,7 @@ export default function ContactsScreen() {
                 <Ionicons name="person-outline" size={20} color={colors.tabIconDefault} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Full Name"
+                  placeholder="Full Name *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={formData.name}
                   onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -238,22 +265,10 @@ export default function ContactsScreen() {
               </View>
 
               <View style={[styles.inputContainer, { borderColor: colors.border }]}>
-                <Ionicons name="call-outline" size={20} color={colors.tabIconDefault} />
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Phone Number"
-                  placeholderTextColor={colors.tabIconDefault}
-                  value={formData.phone}
-                  onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                  keyboardType="phone-pad"
-                />
-              </View>
-
-              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
                 <Ionicons name="mail-outline" size={20} color={colors.tabIconDefault} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Email (Optional)"
+                  placeholder="Email Address *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={formData.email}
                   onChangeText={(text) => setFormData({ ...formData, email: text })}
@@ -263,10 +278,10 @@ export default function ContactsScreen() {
               </View>
 
               <View style={[styles.inputContainer, { borderColor: colors.border }]}>
-                <Ionicons name="logo-whatsapp" size={20} color={colors.tabIconDefault} />
+                <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="WhatsApp Number (Optional)"
+                  placeholder="WhatsApp Number (e.g., +1234567890) *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={formData.whatsapp}
                   onChangeText={(text) => setFormData({ ...formData, whatsapp: text })}
@@ -278,7 +293,7 @@ export default function ContactsScreen() {
                 <Ionicons name="heart-outline" size={20} color={colors.tabIconDefault} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Relationship"
+                  placeholder="Relationship *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={formData.relationship}
                   onChangeText={(text) => setFormData({ ...formData, relationship: text })}
@@ -390,10 +405,6 @@ const styles = StyleSheet.create({
   contactRelationship: {
     fontSize: 12,
     fontStyle: 'italic',
-  },
-  contactPhone: {
-    fontSize: 14,
-    marginBottom: 2,
   },
   contactEmail: {
     fontSize: 12,

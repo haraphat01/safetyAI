@@ -390,7 +390,6 @@ class EmergencyService {
       console.log('Notifying emergency contacts:', {
         contacts: contacts.map(c => ({ 
           name: c.name, 
-          phone: c.phone, 
           email: c.email,
           whatsapp: c.whatsapp 
         })),

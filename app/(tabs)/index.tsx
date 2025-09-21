@@ -60,7 +60,7 @@ export default function HomeScreen() {
   const [modalOpacity] = useState(new Animated.Value(0));
 
   // Custom hooks
-  const { activeCheckIn, timer, handleStopCheckIn, scheduleCheckIn } = useCheckIn();
+  const { activeCheckIn, timer, handleStopCheckIn, scheduleCheckIn, setOnSOSActivated } = useCheckIn();
   const {
     recording,
     recordingTimer,
@@ -86,7 +86,12 @@ export default function HomeScreen() {
       setIncomingCallVisible(true);
     });
 
-
+    // Set up check-in SOS activation callback
+    setOnSOSActivated(() => async () => {
+      console.log('Check-in timer expired - activating SOS');
+      setIsSOSActive(true);
+      await startSosLoop();
+    });
 
     // Set up threat callback
     aiSafetyMonitor.setThreatCallback((threat) => {

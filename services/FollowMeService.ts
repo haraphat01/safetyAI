@@ -338,7 +338,7 @@ class FollowMeService {
         .from('follow_me_participants')
         .select(`
           *,
-          contact:emergency_contacts(name, phone, email, relationship)
+          contact:emergency_contacts(name, email, whatsapp, relationship)
         `)
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });

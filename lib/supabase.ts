@@ -39,17 +39,14 @@ export interface User {
   email: string;
   full_name: string;
   created_at: string;
-  subscription_tier: 'free' | 'premium';
-  subscription_status: 'active' | 'inactive' | 'cancelled';
 }
 
 export interface EmergencyContact {
   id: string;
   user_id: string;
   name: string;
-  phone: string;
-  email?: string;
-  whatsapp?: string;
+  email: string;
+  whatsapp: string;
   relationship: string;
   created_at: string;
 }

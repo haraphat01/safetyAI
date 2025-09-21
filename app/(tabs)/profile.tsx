@@ -1,4 +1,3 @@
-import SubscriptionModal from '@/components/SubscriptionModal';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -28,7 +27,7 @@ export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
+  const [debugModalVisible, setDebugModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     fullName: user?.user_metadata?.full_name || '',
     email: user?.email || '',
@@ -50,8 +49,8 @@ export default function ProfileScreen() {
   const [editingContact, setEditingContact] = useState<EmergencyContact | null>(null);
   const [contactForm, setContactForm] = useState({
     name: '',
-    phone: '',
     email: '',
+    whatsapp: '',
     relationship: '',
   });
 
@@ -101,8 +100,8 @@ export default function ProfileScreen() {
     setEditingContact(null);
     setContactForm({
       name: '',
-      phone: '',
       email: '',
+      whatsapp: '',
       relationship: '',
     });
     setContactsModalVisible(true);
@@ -112,8 +111,8 @@ export default function ProfileScreen() {
     setEditingContact(contact);
     setContactForm({
       name: contact.name,
-      phone: contact.phone,
-      email: contact.email || '',
+      email: contact.email,
+      whatsapp: contact.whatsapp,
       relationship: contact.relationship,
     });
     setContactsModalVisible(true);
@@ -122,8 +121,22 @@ export default function ProfileScreen() {
   const handleSaveContact = async () => {
     if (!user) return;
 
-    if (!contactForm.name || !contactForm.phone) {
-      Alert.alert('Error', 'Name and phone number are required');
+    if (!contactForm.name || !contactForm.email || !contactForm.whatsapp || !contactForm.relationship) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactForm.email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    // Validate WhatsApp number format
+    const whatsappRegex = /^\+[1-9]\d{1,14}$/;
+    if (!whatsappRegex.test(contactForm.whatsapp)) {
+      Alert.alert('Error', 'WhatsApp number must include country code (e.g., +1234567890)');
       return;
     }
 
@@ -177,12 +190,7 @@ export default function ProfileScreen() {
           subtitle: 'Update your profile details',
           action: () => setEditModalVisible(true),
         },
-        {
-          icon: 'card-outline',
-          title: 'Subscription',
-          subtitle: 'Free Plan - Upgrade to Premium',
-          action: () => setSubscriptionModalVisible(true),
-        },
+        
         {
           icon: 'shield-outline',
           title: 'Privacy & Security',
@@ -362,10 +370,11 @@ export default function ProfileScreen() {
             {item.relationship}
           </Text>
         </View>
-        <Text style={[styles.contactPhone, { color: colors.text }]}>{item.phone}</Text>
-        {item.email && (
-          <Text style={[styles.contactEmail, { color: colors.tabIconDefault }]}>{item.email}</Text>
-        )}
+        <Text style={[styles.contactEmail, { color: colors.tabIconDefault }]}>{item.email}</Text>
+        <View style={styles.whatsappContainer}>
+          <Ionicons name="logo-whatsapp" size={12} color="#25D366" />
+          <Text style={[styles.contactWhatsapp, { color: colors.tabIconDefault }]}>{item.whatsapp}</Text>
+        </View>
       </View>
       <View style={styles.contactActions}>
         <TouchableOpacity
@@ -399,9 +408,6 @@ export default function ProfileScreen() {
             <Text style={[styles.profileEmail, { color: colors.tabIconDefault }]}>
               {user?.email}
             </Text>
-            <View style={[styles.subscriptionBadge, { backgroundColor: colors.tint }]}>
-              <Text style={styles.subscriptionText}>Free Plan</Text>
-            </View>
           </View>
         </View>
 
@@ -503,7 +509,7 @@ export default function ProfileScreen() {
                 <Ionicons name="person-outline" size={20} color={colors.tabIconDefault} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Full Name"
+                  placeholder="Full Name *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={contactForm.name}
                   onChangeText={(text) => setContactForm({ ...contactForm, name: text })}
@@ -511,22 +517,10 @@ export default function ProfileScreen() {
               </View>
 
               <View style={[styles.inputContainer, { borderColor: colors.border }]}>
-                <Ionicons name="call-outline" size={20} color={colors.tabIconDefault} />
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Phone Number"
-                  placeholderTextColor={colors.tabIconDefault}
-                  value={contactForm.phone}
-                  onChangeText={(text) => setContactForm({ ...contactForm, phone: text })}
-                  keyboardType="phone-pad"
-                />
-              </View>
-
-              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
                 <Ionicons name="mail-outline" size={20} color={colors.tabIconDefault} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Email (Optional)"
+                  placeholder="Email Address *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={contactForm.email}
                   onChangeText={(text) => setContactForm({ ...contactForm, email: text })}
@@ -536,10 +530,22 @@ export default function ProfileScreen() {
               </View>
 
               <View style={[styles.inputContainer, { borderColor: colors.border }]}>
+                <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="WhatsApp Number (e.g., +1234567890) *"
+                  placeholderTextColor={colors.tabIconDefault}
+                  value={contactForm.whatsapp}
+                  onChangeText={(text) => setContactForm({ ...contactForm, whatsapp: text })}
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={[styles.inputContainer, { borderColor: colors.border }]}>
                 <Ionicons name="heart-outline" size={20} color={colors.tabIconDefault} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Relationship"
+                  placeholder="Relationship *"
                   placeholderTextColor={colors.tabIconDefault}
                   value={contactForm.relationship}
                   onChangeText={(text) => setContactForm({ ...contactForm, relationship: text })}
@@ -559,11 +565,7 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {/* Subscription Modal */}
-      <SubscriptionModal
-        visible={subscriptionModalVisible}
-        onClose={() => setSubscriptionModalVisible(false)}
-      />
+      
     </SafeAreaView>
   );
 }
@@ -600,17 +602,6 @@ const styles = StyleSheet.create({
   profileEmail: {
     fontSize: 16,
     marginBottom: 8,
-  },
-  subscriptionBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  subscriptionText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
   },
   section: {
     marginBottom: 32,
@@ -678,12 +669,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontStyle: 'italic',
   },
-  contactPhone: {
-    fontSize: 14,
-    marginBottom: 2,
-  },
   contactEmail: {
     fontSize: 12,
+  },
+  whatsappContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  contactWhatsapp: {
+    fontSize: 12,
+    marginLeft: 4,
   },
   contactActions: {
     flexDirection: 'row',
